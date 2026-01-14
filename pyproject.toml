@@ -1,0 +1,74 @@
+[build-system]
+requires = ["setuptools >= 80"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bouldering-highlights"
+version = "0.1.0"
+authors = [
+    {name="Souheil Maatoug", email="souheil.maatoug@gmail.com"}
+]
+description = "Generating automatically highlights from bouldering competition videos."
+readme = "README.md"
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Build Tools",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+]
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "notebook",
+    "black",
+    "ruff",
+    "isort",
+    "mypy",
+    "pre-commit",
+    "pytest",
+    "sphinx",
+    "sphinx-autoapi",
+    "furo",
+    "myst-parser"
+]
+[project.urls]
+repository = "https://github.com/SouheilMaatoug/bouldering-highlights"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src", "src.*"]
+exclude = ["tests", "tests.*"]
+
+[tool.black]
+line-length = 100
+
+[tool.ruff]
+line-length = 100
+indent-width = 4
+fix = true
+exclude = [
+    "notebooks",
+    "tests"
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.ruff.lint]
+select = ["I", "E", "F", "G"]  # isort, pyflakes, pycodestyle, pydocstyle
+ignore = ["D100", "D104", "E402"]
+
+[tool.ruff.lint.isort]
+forced-separate = ["tests"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.flake8-bandit]
+check-typed-exception = true
