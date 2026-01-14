@@ -1,2 +1,50 @@
 # bouldering-highlights
-This repository contains a complete end-to-end pipeline for automatically generate highlights from Bouldering competition videos.
+
+An **end-to-end AI pipeline** to automatically create **highlights** from Bouldering competition videos.
+
+This project combines:
+- **Computer vision** (Person detection, tracking, pose estimation)
+- **OCR-based segmentation**
+- **Audio event detection** (audio signal processing + Classification using YAMnet)
+- **Visual Feature extraction** 
+- **Heuristic event rules**
+- **Replay detection (optional)**
+- **Event scoring & selection**
+
+
+## 📦 Features
+
+- Detects Bouldering sections (“Boulder n”) using scene detection + OCR
+- Tracks all persons, identifies the **active climber**
+- Extracts pose-based kinematic features
+- Analyzes the audio track for applause/cheering/shouts
+- Detects key events:
+  - attempts  
+  - dynamic moves (crux)  
+  - falls  
+  - tops  
+- Handles replays (optional)
+- Scores events and selects the best per section
+- Generates:
+  - **events.json**
+  - **highlights.mp4**
+
+---
+
+# 🧭 Pipeline Overview
+
+```mermaid
+flowchart TD
+    A[Input Video (MP4/MOV/MKV)] --> B[Preprocessing<br/>frames, metadata, audio 16 kHz]
+    B --> C[Section Segmentation<br/>scene detection + OCR "Boulder n"]
+    C --> D[Vision Analysis<br/>YOLO -> Tracking -> Pose]
+    D --> E[Active Climber Identification]
+    B --> F[Audio Analysis<br/>RMS + YAMNet]
+    D --> G[Spatio-Temporal Features]
+    F --> G
+    G --> H[Event Detection<br/>attempt / crux / fall / top]
+    H --> I[Replay Handling (Optional)]
+    I --> J[Event Scoring]
+    J --> K[Event Selection per Section]
+    K --> L1[Output JSON]
+    K --> L2[Highlights Video]
