@@ -34,17 +34,18 @@ This project combines:
 # 🧭 Pipeline Overview
 
 ```mermaid
-flowchart TD
-    A[Input Video (MP4/MOV/MKV)] --> B[Preprocessing<br/>frames, metadata, audio 16 kHz]
-    B --> C[Section Segmentation<br/>scene detection + OCR "Boulder n"]
-    C --> D[Vision Analysis<br/>YOLO -> Tracking -> Pose]
-    D --> E[Active Climber Identification]
-    B --> F[Audio Analysis<br/>RMS + YAMNet]
-    D --> G[Spatio-Temporal Features]
-    F --> G
-    G --> H[Event Detection<br/>attempt / crux / fall / top]
-    H --> I[Replay Handling (Optional)]
-    I --> J[Event Scoring]
-    J --> K[Event Selection per Section]
-    K --> L1[Output JSON]
-    K --> L2[Highlights Video]
+flowchart TD;
+    A[Input Video (MP4/MOV/MKV)] --> B[Preprocessing<br/>frames, metadata, audio 16 kHz];
+    B --> C[Section Segmentation<br/>scene detection + OCR "Boulder n"];
+    C --> D[Vision Analysis<br/>YOLO -> Tracking -> Pose];
+    D --> E[Active Climber Identification];
+    B --> F[Audio Analysis<br/>RMS + YAMNet];
+    D --> G[Spatio-Temporal Features];
+    F --> G;
+    G --> H[Event Detection<br/>attempt / crux / fall / top];
+    H --> I[Replay Handling (Optional)];
+    I --> J[Event Scoring];
+    J --> K[Event Selection per Section];
+    K --> L1[Output JSON];
+    K --> L2[Highlights Video];
+```
