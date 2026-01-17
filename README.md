@@ -36,14 +36,17 @@ This project combines:
 flowchart TD
     A[Input Video] --> B[Preprocessing, extraction<br/>frames,  metadata, audio];
     B --> C[Section Segmentation<br/>scene detection + OCR Boulder n];
+    
     C --> D[Vision Analysis<br/>YOLO -> person detection];
     D --> E[Active Climber Identification - crop];
     E --> F[Visual features<br/>MediaPipe -> Pose estimation]
+
     C --> G[Audio Analysis<br/>RMS + YAMNet];
-    D --> G[Audio Features];
-    G --> H[Event Detection<br/>attempt / crux / fall / top];
-    F --> H;
-    H --> J[Event Scoring];
+    G --> H[Audio Features];
+    
+    H --> I[Event Detection<br/>attempt / crux / fall / top];
+    F --> I;
+    I --> J[Event Scoring];
     J --> K[Event Selection per Section];
     K --> L[Highlights Video];
 ```
