@@ -42,7 +42,7 @@ flowchart TD
     D --> G[Spatio-Temporal Features];
     F --> G;
     G --> H[Event Detection<br/>attempt / crux / fall / top];
-    H --> I[Replay Handling (Optional)];
+    H --> I[Replay Handling - Optional];
     I --> J[Event Scoring];
     J --> K[Event Selection per Section];
     K --> L1[Output JSON];
