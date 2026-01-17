@@ -111,3 +111,11 @@ class VideoReader:
         """Release the capture resource."""
         if getattr(self, "cap", None) is not None:
             self.cap.release()
+
+    def __enter__(self) -> "VideoReader":
+        """Open the context manager."""
+        return self
+
+    def __exit__(self, exec_type, exc, tb) -> None:
+        """Close the context manager."""
+        self.release()
