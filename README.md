@@ -1,16 +1,16 @@
 # bouldering-highlights
 
 An **end-to-end AI pipeline** to automatically create **highlights** 
-from Bouldering Olympics 2024 competition videos.
+from the Bouldering Olympics 2024 competition videos.
 
 ![bouldering](images/bouldering_resized.png)
 
-This project combines using pretrained Computer Vision models like **YOLO** for person detection for example, and Image Processing techniques with rule based conditions for event detections.
+This project intergrates pretrained Computer Vision models such as **YOLO** for person detection for example, and Image Processing techniques with rule based logic to identify key events.
 
-For this first version of the project, no training nor fine-tuning is made on the models because it deals with standard person / pose detection problems which are sufficiently developed and efficient.
+For this first version of the project, no model training or fine-tuning is performed. Person detection or pose estimations are already well knwon and developed fields and pretrained models are sufficiently performant and robust.
 
-Rules and numeric parameters of the system will be learned from a small video example.
-However, like any ML system, an evaluation step must be made in order to qualify the system and control its behavior. Special metrics will be defined and a video for testing will be used to evaluate the system.
+System rules and numeric parameters are derived from an example video.
+However, as with any ML-based system, an evaluation phase is essential to validate the performance and understand the system's behavior. Custom metrics will be defined and a dedicated test video will serve as the evaluation benchmark.
 
 Technology used:
 - **Video / audio**
