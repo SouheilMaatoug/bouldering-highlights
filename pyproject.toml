@@ -3,46 +3,54 @@ requires = ["setuptools >= 80"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "bouldering-highlights"
-version = "0.1.0"
+name = "bouldering"
+dynamic = ["version", "readme"]
 authors = [
     {name="Souheil Maatoug", email="souheil.maatoug@gmail.com"}
 ]
 description = "Generating automatically highlights from bouldering competition videos."
-readme = "README.md"
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
   "Topic :: Software Development :: Build Tools",
   "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
 ]
 license = "MIT"
 license-files = ["LICENSE"]
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 dependencies = []
 
 [project.optional-dependencies]
 dev = [
-    "notebook",
-    "black",
-    "ruff",
-    "isort",
-    "mypy",
-    "pre-commit",
-    "pytest",
-    "sphinx",
-    "sphinx-autoapi",
-    "furo",
-    "myst-parser"
+    # dev
+    "notebook>=7",
+    # lint
+    "ruff>=0.14",
+    "pre-commit>=4.3",
+    # test
+    "pytest>=8",
+    "pytest-cov>=7",
+    # doc
+    "sphinx>=7.4.7",
+    "sphinx-autoapi==3.6.1",
+    "furo==2024.8.6",
+    "myst-parser>=3.0.1",
+    "astroid<4",
 ]
 [project.urls]
 repository = "https://github.com/SouheilMaatoug/bouldering-highlights"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["src", "src.*"]
+include = ["src", "src.bouldering", "src.bouldering.*"]
 exclude = ["tests", "tests.*"]
+
+[tool.setuptools.dynamic]
+version = { attr = "src.bouldering.__version__" }
+readme = { file = ["README.md"] }
 
 [tool.black]
 line-length = 100
