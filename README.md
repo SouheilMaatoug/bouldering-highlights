@@ -34,15 +34,8 @@ This project combines:
 # 🧭 Pipeline Overview
 ```mermaid
 flowchart TD
-    A[deploy to production] --> B{is <br/>it friday?};
-    B --> Yes --> C[Do not deploy!];
-```
-
-
-```mermaid
-flowchart TD
-    A[Input Video] --> B[Preprocessing<br/>frames metadata, audio 16 kHz];
-    B --> C[Section Segmentation<br/>scene detection + OCR "Boulder n"];
+    A[Input Video] --> B[Preprocessing, extraction<br/>frames,  metadata, audio];
+    B --> C[Section Segmentation<br/>scene detection + OCR Boulder n];
     C --> D[Vision Analysis<br/>YOLO -> Tracking -> Pose];
     D --> E[Active Climber Identification];
     B --> F[Audio Analysis<br/>RMS + YAMNet];
