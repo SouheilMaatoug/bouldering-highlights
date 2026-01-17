@@ -1,37 +1,30 @@
 # bouldering-highlights
 
-An **end-to-end AI pipeline** to automatically create **highlights** from Bouldering competition videos.
+An **end-to-end AI pipeline** to automatically create **highlights** 
+from Bouldering Olympics 2024 competition videos.
 
-This project combines:
-- **Computer vision** (Person detection, tracking, pose estimation)
-- **OCR-based segmentation**
-- **Audio event detection** (audio signal processing + Classification using YAMnet)
-- **Visual Feature extraction** 
-- **Heuristic event rules**
-- **Replay detection (optional)**
-- **Event scoring & selection**
+![bouldering](images/bouldering_resized.png)
 
+This project combines using pretrained Computer Vision models like **YOLO** for person detection for example, and Image Processing techniques with rule based conditions for event detections.
 
-## 📦 Features
+For this first version of the project, no training nor fine-tuning is made on the models because it deals with standard person / pose detection problems which are sufficiently developed and efficient.
 
-- Detects Bouldering sections (“Boulder n”) using scene detection + OCR
-- Tracks all persons, identifies the **active climber**
-- Extracts pose-based kinematic features
-- Analyzes the audio track for applause/cheering/shouts
-- Detects key events:
-  - attempts  
-  - dynamic moves (crux)  
-  - falls  
-  - tops  
-- Handles replays (optional)
-- Scores events and selects the best per section
-- Generates:
-  - **events.json**
-  - **highlights.mp4**
+Rules and numeric parameters of the system will be learned from a small video example.
+However, like any ML system, an evaluation step must be made in order to qualify the system and control its behavior. Special metrics will be defined and a video for testing will be used to evaluate the system.
+
+Technology used:
+- **Video / audio**
+  - FFMPEG (read/write)
+- **Visual analysis**:
+  - Person detection (YOLOv11)
+  - OCR-based segmentation (EasyOCR)
+  - Pose estimation (MediaPipe)
+- **Audio analysis**
+  - sound classification (YAMNet)
 
 ---
 
-# 🧭 Pipeline Overview
+# Highlights pipeline
 ```mermaid
 flowchart TD
     A[Input Video] --> B[Preprocessing, extraction<br/>frames,  metadata, audio];
