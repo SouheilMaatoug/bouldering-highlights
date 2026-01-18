@@ -32,6 +32,13 @@ class Sequence:
         self.start = start
         self.end = end
 
+    @classmethod
+    def read(cls, path: str) -> "Sequence":
+        from src.bouldering.media.video.io import VideoReader
+
+        vr = VideoReader(path)
+        return vr.extract_sequence()
+
     @property
     def n_frames(self) -> int:
         """Get the number of frames.
