@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Iterator, Optional
+from typing import Iterator, List, Optional
 
 import cv2
 import numpy as np
@@ -106,6 +106,48 @@ class VideoReader:
         """
         frame_idx = int(timestamp * self.fps)
         return self.get_frame_idx(frame_idx)
+
+    def get_frames_between_idx(self, idx1: int, idx2: int) -> List[np.ndarray]:
+        """Get a sequence of frames between two frame indices.
+
+        Args:
+            idx1 (int): The start frame index.
+            idx2 (int): The end frame index.
+
+        Returns:
+            np.ndarray: The sequence of frames.
+        """
+        frames = []
+        for frame_idx in range(idx1, idx2):
+            frames.append(self.get_frame_idx(frame_idx))
+        return frames
+
+    def time2frame(self, timestamp: float) -> float:
+        """Convert a timestamp to an index.
+
+        Args:
+            timestamp (float): The timestamp in seconds.
+
+        Returns:
+            float: The indice.
+        """
+        return max(0, int(round(timestamp * self.fps)))
+
+    def get_frame_between_timestamps(
+        self, timestamp1: float, timestamp2: float
+    ) -> List[np.ndarray]:
+        """Get a sequence of frames between two timestamps.
+
+        Args:
+            timestamp1 (float): The start timestamp in seconds.
+            timestamp2 (float): The end timestamp in seconds.
+
+        Returns:
+            List[np.ndarray]: The sequence of frames.
+        """
+        idx1 = self.time2frame(timestamp1)
+        idx2 = self.time2frame(timestamp2)
+        return self.get_frames_between_idx(idx1, idx2)
 
     def release(self) -> None:
         """Release the capture resource."""
