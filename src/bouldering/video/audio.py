@@ -1,4 +1,5 @@
 import numpy as np
+import soundfile as sf
 
 
 class Audio:
@@ -13,6 +14,19 @@ class Audio:
         """
         self.samples = samples
         self.sample_rate = sample_rate
+
+    @classmethod
+    def read(cls, path: str) -> "Audio":
+        """A class method for reading an audio file.
+
+        Args:
+            path (str): The path to the audio file.
+
+        Returns:
+            Audio: An Audio instance.
+        """
+        samples, sr = sf.read(path)
+        return cls(samples, sr)
 
     @property
     def duration(self) -> float:
