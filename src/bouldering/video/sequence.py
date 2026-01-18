@@ -15,12 +15,25 @@ class Sequence:
             frames (List[np.ndarray]): A list of frames.
             fps (float): Frames per second.
         """
-        self.frames = frames
-        self.fps = fps
+        self._frames = frames
+        self._fps = fps
 
-        def __len__(self):
-            """Special method to return the length of the frames."""
-            return len(self.frames)
+    @property
+    def frames(self):
+        return self._frames
+
+    @property
+    def fps(self):
+        return self._fps
+
+    @property
+    def n_frames(self) -> int:
+        """Get the number of frames.
+
+        Returns:
+            int: The number of frames.
+        """
+        return len(self.frames)
 
     @property
     def resolution(self) -> Tuple[int, int]:

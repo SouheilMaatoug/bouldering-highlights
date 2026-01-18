@@ -12,8 +12,8 @@ class Audio:
             samples (np.ndarray): The array of samples.
             sample_rate (int): The sample rate.
         """
-        self.samples = samples
-        self.sample_rate = sample_rate
+        self._samples = samples
+        self._sample_rate = sample_rate
 
     @classmethod
     def read(cls, path: str) -> "Audio":
@@ -27,6 +27,14 @@ class Audio:
         """
         samples, sr = sf.read(path)
         return cls(samples, sr)
+
+    @property
+    def sample(self):
+        return self._samples
+
+    @property
+    def sample_rate(self):
+        return self._sample_rate
 
     @property
     def duration(self) -> float:
@@ -50,3 +58,11 @@ class Audio:
         start = int(start_time * self.sample_rate)
         end = int(end_time * self.sample_rate)
         return Audio(self.samples[start:end], self.sample_rate)
+
+    def write(self, output_path: str) -> None:
+        """Write to an audio file.
+
+        Args:
+            output_path (str): The path to the audio file.
+        """
+        sf.write(output_path, self.samples, self.sample_rate)
