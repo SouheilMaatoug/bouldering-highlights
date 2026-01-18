@@ -29,7 +29,7 @@ class Audio:
         return cls(samples, sr)
 
     @property
-    def sample(self):
+    def samples(self):
         return self._samples
 
     @property

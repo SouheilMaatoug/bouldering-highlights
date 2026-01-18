@@ -12,10 +12,10 @@ class Video:
 
     @classmethod
     def read(cls, path: str) -> "Video":
-        with VideoReader(path) as vr:
-            sequence = vr.extract_sequence()
-            audio = vr.extract_audio()
-            return cls(sequence, audio)
+        vr = VideoReader(path)
+        sequence = vr.extract_sequence()
+        audio = vr.extract_audio()
+        return cls(sequence, audio)
 
     @property
     def metadata(self) -> dict:
@@ -42,5 +42,5 @@ class Video:
         return Video(sequence_cut, audio_cut)
 
     def write(self, output_path: str) -> None:
-        with VideoWriter(output_path) as vw:
-            vw.write(self.sequence, self.audio)
+        vw = VideoWriter(output_path)
+        vw.write(self.sequence, self.audio)

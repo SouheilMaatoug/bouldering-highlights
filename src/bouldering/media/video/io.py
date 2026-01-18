@@ -24,18 +24,30 @@ class VideoReader:
         if not self.cap.isOpened():
             raise IOError(f"Cannot open video {filename}")
 
-    def release(self) -> None:
-        """Release the capture resource."""
-        if getattr(self, "cap", None) is not None:
-            self.cap.release()
+        self._fps = self.cap.get(cv2.CAP_PROP_FPS)
+        self._width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        self._height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self._nframes = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    def __enter__(self) -> "VideoReader":
-        """Open the context manager."""
-        return self
+    @property
+    def fps(self) -> float:
+        """Frame per second."""
+        return self._fps
 
-    def __exit__(self, exec_type, exc, tb) -> None:
-        """Close the context manager."""
-        self.release()
+    @property
+    def width(self) -> int:
+        """Frame width in pixels"""
+        return self._width
+
+    @property
+    def height(self) -> int:
+        """Frame height in pixels"""
+        return self._height
+
+    @property
+    def n_frames(self) -> int:
+        """Number of frames."""
+        return self._nframes
 
     def extract_sequence(self) -> Sequence:
         """Extract the sequence of frames of the video.
@@ -43,15 +55,13 @@ class VideoReader:
         Returns:
             Sequence: The sequence of frames of the video.
         """
-        self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
-        frames = []
-        while True:
-            ret, frame = self.cap.read()
-            if not ret:
-                break
-            frames.append(frame)
-        sequence = Sequence(frames, self.cap.get(cv2.CAP_PROP_FPS))
-        return sequence
+        return Sequence(
+            video_path=self.video_path,
+            resolution=(self.width, self.height),
+            fps=self.fps,
+            start=0,
+            end=self.n_frames,
+        )
 
     def extract_audio(self) -> Audio:
         """Extract the audio track of the video.
@@ -59,7 +69,11 @@ class VideoReader:
         Returns:
             Audio: The audio track of the video.
         """
-        audio = Audio.read(self.video_path)
+        tmp_audio = tmp.create_tmp_file(suffix=".wav")
+        ffmpeg.extract_audio_file(self.video_path, tmp_audio)
+        audio = Audio.read(tmp_audio)
+        tmp.clear_file(tmp_audio)
+
         return audio
 
 
@@ -75,9 +89,8 @@ class VideoWriter:
     @staticmethod
     def write_frames(output_path: str, codec: str, sequence: Sequence):
         """Write frames to the output file. without audio."""
-        fourcc = cv2.VideoWriter_fourcc(*codec)
-        frame_writer = cv2.VideoWriter(output_path, fourcc, sequence.fps, sequence.resolution)
-        for frame in sequence:
+        frame_writer = cv2.VideoWriter(output_path, codec, sequence.fps, sequence.resolution)
+        for frame in sequence.frames():
             frame_writer.write(frame)
         frame_writer.release()
 
@@ -103,15 +116,3 @@ class VideoWriter:
         # clear tmp files
         tmp.clear_file(tmp_video)
         tmp.clear_file(tmp_audio)
-
-    def close(self):
-        """Close the writer."""
-        self.writer.release()
-
-    def __enter__(self) -> "VideoWriter":
-        """Open the context manager."""
-        return self
-
-    def __exit__(self, exec_type, exc, tb) -> None:
-        """Close the context manager."""
-        self.close()
