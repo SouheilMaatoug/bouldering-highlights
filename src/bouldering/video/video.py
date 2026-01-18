@@ -1,7 +1,6 @@
 from src.bouldering.video.audio import Audio
+from src.bouldering.video.io import VideoReader, VideoWriter
 from src.bouldering.video.sequence import Sequence
-from src.bouldering.video.video_reader import VideoReader
-from src.bouldering.video.video_writer import VideoWriter
 
 
 class Video:
