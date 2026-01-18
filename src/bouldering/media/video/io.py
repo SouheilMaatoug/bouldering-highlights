@@ -2,10 +2,9 @@ from pathlib import Path
 
 import cv2
 
-from bouldering.video import ffmpeg
-from src.bouldering import utils
-from src.bouldering.video.audio import Audio
-from src.bouldering.video.sequence import Sequence
+from src.bouldering.media.audio.audio import Audio
+from src.bouldering.media.video.sequence import Sequence
+from src.bouldering.utils import ffmpeg, tmp
 
 
 class VideoReader:
@@ -91,19 +90,19 @@ class VideoWriter:
         """Write a single frame."""
 
         # write the frames in a temporary file
-        tmp_video = utils.create_tmp_file(suffix=".mp4")
+        tmp_video = tmp.create_tmp_file(suffix=".mp4")
         self.write_frames(tmp_video, self.codec, sequence)
 
         # write the audion in a temporary file
-        tmp_audio = utils.create_tmp_file(suffix=".wav")
+        tmp_audio = tmp.create_tmp_file(suffix=".wav")
         self.write_audio(tmp_audio, audio)
 
         # merge audio video
         ffmpeg.merge_audio_video(self.output_path, tmp_video, tmp_audio)
 
         # clear tmp files
-        utils.clear_file(tmp_video)
-        utils.clear_file(tmp_audio)
+        tmp.clear_file(tmp_video)
+        tmp.clear_file(tmp_audio)
 
     def close(self):
         """Close the writer."""
