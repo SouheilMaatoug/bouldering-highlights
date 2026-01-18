@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import soundfile as sf
+
 from src.bouldering.media.audio.audio import Audio
 
 

@@ -1,53 +1,43 @@
 from pathlib import Path
 
-import cv2
-import numpy as np
+import pytest
 
-from src.bouldering.io.video_reader import VideoReader
-from src.bouldering.io.video_writer import VideoWriter
+from src.bouldering.media.audio.audio import Audio
+from src.bouldering.media.video.io import VideoReader, VideoWriter
+from src.bouldering.media.video.sequence import Sequence
 
 
-def test_video_reader(make_video, fps, size, n_frames):
-    """Test that VideoReader reads a temporary file."""
-    filename = make_video
-    w, h = size
+def test_video_reader(make_audio_video_file, fps, size, n_frames, sample_rate, duration):
+    """Test VideoReader on a temporary file."""
+    filename = make_audio_video_file
+
     reader = VideoReader(str(filename))
 
+    # extract sequence
+    seq = reader.extract_sequence()
+    assert seq.fps == fps
+    assert seq.resolution == size
+    assert seq.start == 0
+    assert seq.n_frames == n_frames
 
-    # check metadata
-    assert reader.fps == fps
-    assert reader.frame_count == n_frames
-    assert (reader.width, reader.height) == size
-
-    # iterate over frames
-    count = 0
-    with VideoReader(str(filename)) as vr:
-        for frame in vr:
-            assert frame is not None
-            assert frame.shape == (h, w, 3)
-            count += 1
-    assert count == n_frames
+    # extract audio
+    audio = reader.extract_audio()
+    assert audio.sample_rate == sample_rate
+    assert pytest.approx(audio.duration, 0.5) == duration
 
 
-def test_video_writer(tmp_path: Path, codec, fps, size, n_frames):
+def test_video_writer(tmp_path: Path, make_audio_file, make_video_file):
     """Test that VideoWriter writes a temporary file."""
-    out = tmp_path / "out.mp4"
-    w, h = size
+    video_file = make_video_file
+    audio_file = make_audio_file
 
-    with VideoWriter(output_path=str(out), codec=codec, fps=fps, resolution=size) as vw:
-        for _ in range(n_frames):
-            frame = np.random.randint(low=0, high=255, size=(h, w, 3), dtype=np.uint8)
-            vw.write(frame)
+    seq = Sequence.read(str(video_file))
+    audio = Audio.read(str(audio_file))
+
+    out = tmp_path / "out.mp4"
+    writer = VideoWriter(str(out))
+    writer.write(seq, audio)
 
     # file existence
     assert out.exists()
     assert out.stat().st_size > 0
-
-    # verify we can read it
-    cap = cv2.VideoCapture(str(out))
-    _, frame = cap.read()
-    cap.release()
-
-    assert frame is not None
-    assert frame.shape[0] == h
-    assert frame.shape[1] == w

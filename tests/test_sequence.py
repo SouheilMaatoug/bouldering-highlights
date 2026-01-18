@@ -1,9 +1,10 @@
 from src.bouldering.media.video.sequence import Sequence
 
+
 def test_sequence(make_video_file, fps, size, n_frames):
     """Test the class Sequence."""
     video_file = make_video_file
-    seq = Sequence(str(video_file), fps=fps, resolution=size, start=0, end=n_frames)
+    seq = Sequence.read(str(video_file))
 
     # metadata
     assert seq.fps == fps
@@ -16,4 +17,3 @@ def test_sequence(make_video_file, fps, size, n_frames):
     assert seq_cut.fps == seq.fps
     assert seq_cut.resolution == seq.resolution
     assert seq_cut.n_frames == 5
-    
