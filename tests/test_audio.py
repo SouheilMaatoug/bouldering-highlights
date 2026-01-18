@@ -16,12 +16,15 @@ def test_audio(tmp_path: Path, make_audio_file, duration, sample_rate):
     assert len(audio.samples) == sample_rate * duration
 
     # cut
-    audio_cut = audio.cut(0.2, 2.3)
+    dur = 12.6
+    start = 0.8
+    end = start + dur
+    audio_cut = audio.cut(start, end)
     assert audio_cut.sample_rate == sample_rate
-    assert audio_cut.duration == 2.1
+    assert audio_cut.duration == dur
 
     # write
-    out = tmp_path / "sample.wav"
+    out = tmp_path / "sample_written.wav"
     audio_cut.write(str(out))
 
     assert out.exists()
@@ -29,3 +32,4 @@ def test_audio(tmp_path: Path, make_audio_file, duration, sample_rate):
     data, sr = sf.read(str(out))
     assert len(data) > 0
     assert sr == sample_rate
+    assert len(data) / sr == dur
