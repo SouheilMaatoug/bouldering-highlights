@@ -24,7 +24,7 @@ def test_video_reader(make_audio_video_file, fps, size, n_frames, sample_rate, d
     # extract audio
     audio = reader.extract_audio()
     assert audio.sample_rate == sample_rate
-    assert pytest.approx(audio.duration, 0.5) == duration
+    assert pytest.approx(audio.duration, 0.05) == duration
 
 
 def test_video_writer(tmp_path: Path, make_audio_file, make_video_file):
@@ -59,7 +59,7 @@ def test_video(tmp_path: Path, make_audio_video_file, fps, size, n_frames, sampl
     # audio
     audio = video.audio
     assert audio.sample_rate == sample_rate
-    assert pytest.approx(audio.duration, 0.1) == duration
+    assert pytest.approx(audio.duration, 0.05) == duration
 
     # cut
     dur = 2.2
@@ -68,7 +68,7 @@ def test_video(tmp_path: Path, make_audio_video_file, fps, size, n_frames, sampl
     video_cut = video.cut(start, end)
     seq_cut = video_cut.sequence
     audio_cut = video_cut.audio
-    assert pytest.approx(seq_cut.n_frames, 0.1) == dur * fps
+    assert pytest.approx(seq_cut.n_frames, 0.05) == dur * fps
     assert audio_cut.duration == dur
 
     # write
