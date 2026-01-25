@@ -1,6 +1,6 @@
 # bouldering-highlights
 
-An **end-to-end AI pipeline** to automatically create **highlights** 
+An **end-to-end AI pipeline** to automatically create **highlights**
 from the Bouldering Olympics 2024 competition videos.
 
 ![bouldering](images/bouldering_resized.png)
@@ -29,14 +29,14 @@ Technology used:
 flowchart TD
     A[Input Video] --> B[Preprocessing, extraction<br/>frames,  metadata, audio];
     B --> C[Section Segmentation<br/>scene detection + OCR Boulder n];
-    
+
     C --> D[Vision Analysis<br/>YOLO -> person detection];
     D --> E[Active Climber Identification - crop];
     E --> F[Visual features<br/>MediaPipe -> Pose estimation]
 
     C --> G[Audio Analysis<br/>RMS + YAMNet];
     G --> H[Audio Features];
-    
+
     H --> I[Event Detection<br/>attempt / crux / fall / top];
     F --> I;
     I --> J[Event Scoring];
