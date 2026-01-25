@@ -41,7 +41,7 @@ def parse_boulder_number(text):
         try:
             n = int(m.group(1))
             return True, n
-        except:
+        except:  # noqa
             pass
     m = _RE_ROMAN.search(t) or _RE_ROMAN_T.search(t)
     if m:
