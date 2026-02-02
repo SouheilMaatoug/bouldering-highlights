@@ -41,7 +41,7 @@ class ScenePipeline:
         macro_scenes = self.macro.split(video)
 
         for macro in macro_scenes:
-            sub_scenes = self.micro.split_range(video, macro.start_time, macro.end_time)
+            sub_scenes = self.micro.split(video, macro.start_time, macro.end_time)
 
             if not sub_scenes:
                 final_scenes.append(macro)
