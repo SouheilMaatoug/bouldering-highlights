@@ -19,7 +19,19 @@ _RE_ROMAN = re.compile(r"\bboulder\s*[:#\-]?\s*(i|ii|iii|iv|v|vi|vii|viii|ix|x)\
 _RE_ROMAN_T = re.compile(r"\bboulder(i|ii|iii|iv|v|vi|vii|viii|ix|x)\b", re.IGNORECASE)
 
 
-def _normalize(s):
+def _normalize(s: str):
+    """Normalize a string to reduce typical OCR confusions.
+
+    The function applies lowercasing, trims whitespace, and replaces common OCR misread characters.
+    - `0` -> `o`
+    - `|` -> `l`
+
+    Args:
+        s (str): Input text.
+
+    Returns:
+        str: Normalized text.
+    """
     if not s:
         return ""
     s = s.lower()
@@ -27,10 +39,18 @@ def _normalize(s):
     return s.strip()
 
 
-def parse_boulder_number(text):
-    """
-    Returns (is_boulder: bool, number: int|None)
-    Accepts: 'Boulder 1', 'Boulder1', 'Boulder I', and small OCR confusions.
+def parse_boulder_number(text: str) -> tuple[bool, int | None]:
+    """Parse a Boulder label from OCR-read text.
+
+    - Arabic numbers
+    - Roman numerals
+    - OCR-confused tokens
+
+    Args:
+        text (str): Raw OCR text potentially containing a boulder label.
+
+    Returns:
+        tuple[bool, int | None]: A tuple (is_boulder, boulder_number).
     """
     t = _normalize(text)
     if "boulder" not in t:

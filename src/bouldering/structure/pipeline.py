@@ -1,14 +1,13 @@
 from typing import List
 
 from src.bouldering.media.video.video import Video
-from src.bouldering.vision.scenes.base import Scene
-from src.bouldering.vision.scenes.content import ContentSceneSplitter
-from src.bouldering.vision.scenes.ocr import OCRSceneSplitter
+from src.bouldering.structure.scenes.base import Scene
+from src.bouldering.structure.scenes.content import ContentSplitter
+from src.bouldering.structure.scenes.ocr import OCRSplitter
 
 
 class ScenePipeline:
-    """
-    Hierarchical scene detection pipeline.
+    """Hierarchical scene detection pipeline.
 
     1. Macro splitting using OCR (semantic)
     2. Micro splitting using content changes (visual)
@@ -16,15 +15,23 @@ class ScenePipeline:
 
     def __init__(
         self,
-        macro_splitter: OCRSceneSplitter,
-        micro_splitter: ContentSceneSplitter,
+        macro_splitter: OCRSplitter,
+        micro_splitter: ContentSplitter,
     ):
+        """Initialize the hierarchical scene detection pipeline.
+
+        Args:
+            macro_splitter (OCRSplitter): OCR-based splitter.
+            micro_splitter (ContentSplitter): Component-based splitter.
+        """
         self.macro = macro_splitter
         self.micro = micro_splitter
 
     def run(self, video: Video) -> List[Scene]:
-        """
-        Run the full scene detection pipeline.
+        """Run the full scene detection pipeline.
+
+        Args:
+            video (Video): Input video.
 
         Returns:
             List[Scene]: Final refined scenes.

@@ -4,15 +4,13 @@ from typing import Any, Dict
 from tqdm import tqdm
 
 from src.bouldering.media.video.video import Video
-from src.bouldering.vision.ocr import utils
-from src.bouldering.vision.ocr.detector import OCRDetector
-from src.bouldering.vision.ocr.parser import parse_boulder_number
+from src.bouldering.models.ocr.detector import OCRDetector
+from src.bouldering.models.ocr.parser import parse_boulder_number
+from src.bouldering.utils import image as im_utils
 
 
 class SceneSplitterOCR:
-    """
-    Scene splitter driven by OCR 'BOULDER N' overlays.
-    """
+    """Scene splitter driven by OCR 'BOULDER N' overlays."""
 
     def __init__(
         self,
@@ -26,6 +24,21 @@ class SceneSplitterOCR:
         majority_ratio=0.6,
         require_number=True,
     ):
+        """Initialize the OCR-driven splitter.
+
+        Args:
+            crop_box (list): Normalized crop region `[x1, y1, x2, y2]` in percent units.
+            langs (tuple, optional): EasyOCR language codes. Defaults to ("en",).
+            fx (float, optional): Horizontal scale factor applied after cropping. Defaults to 0.5.
+            fy (float, optional): Vertical scale factor applied after cropping. Defaults to 0.5.
+            stride (int, optional): Frame sampling stride. Defaults to 3.
+            batch_size (int, optional): Number of frames processed in one OCR batch. Defaults to 16.
+            smooth_window (int, optional): Temporal smoothing window length. Defaults to 5.
+            majority_ratio (float, optional): Required fraction of 'positive' frames inside a window to accept
+                a detection. Defaults to 0.6.
+            require_number (bool, optional): If True, only windows with a confidently parsed boulder number create
+                a start record. Defaults to True.
+        """
         self.crop_box = crop_box
         self.fx = fx
         self.fy = fy
@@ -38,11 +51,13 @@ class SceneSplitterOCR:
         self.detector = OCRDetector(langs=list(langs))
 
     def split(self, video: Video):
-        """
-        Split video into OCR-confirmed Boulder sections.
+        """Split the video into OCR-confirmed boulder start markers.
+
+        Args:
+            video (Video): Input video.
 
         Returns:
-            List[Dict]: [{"frame_idx": int, "boulder": Optional[int]}]
+            List[Dict]: A list of start markers in chronological order.
         """
         frames = video.sequence.frames()
         n_frames = video.sequence.n_frames
@@ -60,6 +75,7 @@ class SceneSplitterOCR:
         )
 
         def flush():
+            """Run OCR on the current batch and store result by frame index."""
             if not batch_imgs:
                 return
             results = self.detector.read_batch(batch_imgs)
@@ -75,8 +91,8 @@ class SceneSplitterOCR:
             if idx % self.stride != 0:
                 continue
 
-            cropped = utils.crop_frame_percent(frame, *self.crop_box)
-            resized = utils.resize(cropped, self.fx, self.fy)
+            cropped = im_utils.crop_frame_percent(frame, *self.crop_box)
+            resized = im_utils.resize(cropped, self.fx, self.fy)
 
             batch_imgs.append(resized)
             batch_idxs.append(idx)
@@ -91,7 +107,14 @@ class SceneSplitterOCR:
         return self._postprocess(detections)
 
     def _postprocess(self, detections: Dict[int, Any]):
-        """Temporal smoothing + consensus logic."""
+        """Apply temporal smoothing and consensus to raw OCR detections.
+
+        Args:
+            detections (Dict[int, Any]): Mapping from sampled frame index to the OCR result list for that frame.
+
+        Returns:
+            list[Dict]: Start markers postprocessed.
+        """
         per_frame = []
 
         for idx, items in sorted(detections.items()):

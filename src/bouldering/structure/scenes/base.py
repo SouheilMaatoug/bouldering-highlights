@@ -7,8 +7,7 @@ from src.bouldering.media.video.video import Video
 
 @dataclass(frozen=True)
 class Scene:
-    """
-    Represents a temporal segment of a video.
+    """A class for defining a scene in a video (segment of a video).
 
     Attributes:
         start_time (float): Start time in seconds.
@@ -24,14 +23,11 @@ class Scene:
 
 
 class SceneSplitter(ABC):
-    """
-    Abstract base class for scene splitters.
-    """
+    """Abstract base class for scene splitters."""
 
     @abstractmethod
     def split(self, video: Video) -> List[Scene]:
-        """
-        Split a video into scenes.
+        """Split a video into scenes.
 
         Args:
             video (Video): Input video.

@@ -1,28 +1,29 @@
 from typing import List
 
 from src.bouldering.media.video.video import Video
-from src.bouldering.vision.ocr.splitter import SceneSplitterOCR
-from src.bouldering.vision.scenes.base import Scene, SceneSplitter
+from src.bouldering.models.ocr.splitter import SceneSplitterOCR
+from src.bouldering.structure.scenes.base import Scene, SceneSplitter
 
 
-class OCRSceneSplitter(SceneSplitter):
-    """
-    Macro scene splitter based on OCR overlays (e.g. 'BOULDER N').
-    """
+class OCRSplitter(SceneSplitter):
+    """Scene splitter based on OCR detection ('BOULDERING')."""
 
     def __init__(self, splitter: SceneSplitterOCR):
-        """
+        """Initialize the OCR-based scene splitter.
+
         Args:
-            splitter (SceneSplitterOCR): OCR-based splitter logic.
+            splitter (SceneSplitterOCR): OCR splitter object.
         """
         self._splitter = splitter
 
     def split(self, video: Video) -> List[Scene]:
-        """
-        Split video into coarse OCR-defined scenes.
+        """Split a video into coarse OCR-defined scenes.
+
+        Args:
+            video (Video): Input video.
 
         Returns:
-            List[Scene]: One scene per detected OCR segment.
+            List[Scene]: A list of scene objects.
         """
         starts = self._splitter.split(video)
         fps = video.sequence.fps

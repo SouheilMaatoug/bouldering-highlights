@@ -81,7 +81,7 @@ quote-style = "double"
 indent-style = "space"
 
 [tool.ruff.lint]
-select = ["I", "E", "F", "G"]  # isort, pyflakes, pycodestyle, pydocstyle
+select = ["I", "E", "F", "G", "D"]  # isort, pyflakes, pycodestyle, pydocstyle
 ignore = ["D100", "D104", "E402"]
 
 [tool.ruff.lint.isort]
