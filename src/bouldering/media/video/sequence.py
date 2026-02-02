@@ -61,6 +61,27 @@ class Sequence:
         """
         return self._resolution
 
+    def frame(self, idx: int) -> np.ndarray:
+        """Extract a particular frame by its index.
+
+        Args:
+            idx (int): The index of the frame.
+
+        Returns:
+            np.ndarray: The frame at the index.
+        """
+        frame_idx = idx + self.start
+        if frame_idx >= self.end:
+            raise ValueError(f"index out of bounds! Maximum frames = {self.n_frames}")
+
+        cap = cv2.VideoCapture(self.video_path)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, idx + self.start)
+        ret, frame = cap.read()
+        if not ret:
+            raise RuntimeError(f"Could not read frame at index {idx}")
+        cap.release()
+        return frame
+
     def frames(self) -> Iterator[np.ndarray]:
         cap = cv2.VideoCapture(self.video_path)
         cap.set(cv2.CAP_PROP_POS_FRAMES, self.start)
