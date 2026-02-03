@@ -27,8 +27,10 @@ dependencies = [
     "torch==2.10.0",
     "torchvision==0.25.0",
     "easyocr==1.7.2",
-    "tqdm",
-    "scenedetect"
+    "tqdm==4.67.1",
+    "scenedetect==0.6.7.1",
+    "ultralytics==8.4.11",
+    "supervision==0.27.0"
     ]
 
 [project.optional-dependencies]
