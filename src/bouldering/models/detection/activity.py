@@ -15,7 +15,7 @@ from typing import List, Tuple
 
 import numpy as np
 
-from bouldering.models.typing import TrackEntry, Tracks
+from src.bouldering.models.detection.typing import TrackEntry, Tracks
 
 # ---------------------------------------------------------------------
 # Low-level helpers
