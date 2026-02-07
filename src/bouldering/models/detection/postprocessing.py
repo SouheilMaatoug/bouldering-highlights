@@ -15,8 +15,8 @@ def temporal_gap(track_a: List[TrackEntry], track_b: List[TrackEntry]) -> float:
     Returns:
         float: Time gap in seconds.
     """
-    end_a = track_a[-1].frame
-    start_b = track_b[0].frame
+    end_a = track_a[-1]["frame"]
+    start_b = track_b[0]["frame"]
     return start_b - end_a
 
 
@@ -31,8 +31,8 @@ def spatial_distance(track_a: List[TrackEntry], track_b: List[TrackEntry], frame
     Returns:
         float: Spatial distance in pixels.
     """
-    c1 = track_a[-1].bbox.center
-    c2 = track_b[0].bbox.center
+    c1 = track_a[-1]["bbox"].center
+    c2 = track_b[0]["bbox"].center
     h, w = frame_shape[:2]
     return np.linalg.norm((c1 - c2) / np.array([w, h]))
 
