@@ -4,7 +4,7 @@ from typing import Iterable, Optional, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 
-from src.bouldering.models.detection.typing import BBox, Tracks
+from src.bouldering.utils.typing import BBox, Tracks
 from src.bouldering.visualization.primitives import draw_bbox, prepare_figure
 
 
