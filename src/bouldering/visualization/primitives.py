@@ -4,7 +4,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
-from src.bouldering.models.detection.typing import BBox
+from src.bouldering.utils.typing import BBox
 
 
 def prepare_figure(
