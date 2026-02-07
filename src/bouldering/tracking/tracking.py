@@ -5,8 +5,8 @@ import numpy as np
 import supervision as sv
 from tqdm import tqdm
 
-from src.bouldering.models.detection.typing import BBox, TrackEntry, Tracks
 from src.bouldering.models.detection.yolo import YoloPersonDetector
+from src.bouldering.utils.typing import BBox, TrackEntry, Tracks
 
 
 class YoloPersonTracker:
