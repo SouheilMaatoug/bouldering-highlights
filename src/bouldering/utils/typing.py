@@ -77,3 +77,7 @@ class Event(TypedDict, total=False):
     duration: float
     intensity: float
     score: float
+
+
+# landmark_name -> (x, y, visibility)
+PoseLandmarks = Dict[str, Tuple[float, float, float]]
