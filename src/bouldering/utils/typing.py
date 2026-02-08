@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, List, Tuple, TypedDict
 
+import numpy as np
+
 
 @dataclass(frozen=True)
 class BBox:
@@ -34,9 +36,11 @@ class BBox:
     @property
     def center(self) -> Tuple[float, float]:
         """Center (cx, cy) of the bounding box."""
-        return (
-            (self.x1 + self.x2) / 2.0,
-            (self.y1 + self.y2) / 2.0,
+        return np.array(
+            [
+                (self.x1 + self.x2) / 2.0,
+                (self.y1 + self.y2) / 2.0,
+            ]
         )
 
     def as_xyxy(self) -> Tuple[float, float, float, float]:
@@ -79,5 +83,6 @@ class Event(TypedDict, total=False):
     score: float
 
 
-# landmark_name -> (x, y, visibility)
-PoseLandmarks = Dict[str, Tuple[float, float, float]]
+Landmark = Tuple[float, float, float]  # (x, y, visibility)
+PoseLandmarks = Dict[str, Landmark]
+PoseFrame = Dict[str, object]
