@@ -61,17 +61,15 @@ def center_of_gravity(pose_frame: PoseFrame) -> Optional[Tuple[float, float]]:
     landmarks = pose_frame["landmarks"]
 
     points = []
-    for name in [
-        "left_hip",
-        "right_hip",
-        "left_shoulder",
-        "right_shoulder",
-    ]:
-        p = get_landmark_xy(landmarks, name)
-        if p:
-            points.append(p)
+    for x, y, v in landmarks.values():
+        if v >= 0.5:
+            points.append((x, y))
 
-    return mean_xy(points)
+    if not points:
+        return None
+
+    xs, ys = zip(*points)
+    return float(sum(xs) / len(xs)), float(sum(ys) / len(ys))
 
 
 def cog_y(pose_frame: PoseFrame) -> Optional[float]:
