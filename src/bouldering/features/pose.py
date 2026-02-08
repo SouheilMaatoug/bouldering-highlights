@@ -151,3 +151,16 @@ def pose_visibility_ratio(
 
     visible = sum(1 for _, _, v in landmarks.values() if v >= min_visibility)
     return visible / len(landmarks)
+
+
+def normalize_cog_y(
+    y_pixel: float,
+    frame_height: int,
+) -> float:
+    """Normalize vertical coordinate so that.
+
+    Normalized as follows:
+    - 0.0 = bottom of frame.
+    - 1.0 = top of frame.
+    """
+    return 1.0 - (y_pixel / frame_height)
