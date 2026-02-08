@@ -51,51 +51,59 @@ def contiguous_segments(
 
 
 def detect_fall(
-    cog_velocity: List[TimeValue],
-    visibility: List[TimeValue],
-    velocity_threshold: float = -0.8,
-    min_duration: float = 0.2,
+    velocity_norm: List[Tuple[float, Optional[float]]],
+    cog_y_norm: List[Tuple[float, Optional[float]]],
+    visibility: List[Tuple[float, Optional[float]]],
+    velocity_threshold: float = -0.3,
+    ground_threshold: float = 0.15,
+    min_duration: float = 0.25,
     max_gap: float = 0.15,
-) -> List[Event]:
-    """Detect fall events.
-
-    Fall definition:
-    - strong downward CoG velocity
-    - followed or accompanied by visibility drop
+) -> List[Dict]:
+    """Detect FALL events.
 
     Args:
-        cog_velocity: (time, vertical velocity)
+        velocity_norm: (time, normalized vertical velocity)
+        cog_y_norm: (time, normalized CoG Y)
         visibility: (time, pose visibility ratio)
         velocity_threshold: downward velocity threshold
+        ground_threshold: CoG near ground threshold
         min_duration: minimum fall duration (seconds)
-        max_gap: max allowed gap between samples
+        max_gap: max gap between samples
 
     Returns:
-        List of FALL events.
+        List of FALL event dictionaries.
     """
-    fall_times = [t for (t, v) in cog_velocity if v is not None and v < velocity_threshold]
+    candidate_times = []
 
-    segments = contiguous_segments(fall_times, max_gap)
-    events: List[Event] = []
+    for (t, v), (_, y), (_, vis) in zip(
+        velocity_norm,
+        cog_y_norm,
+        visibility,
+    ):
+        if v is not None and y is not None and v < velocity_threshold and y < ground_threshold:
+            candidate_times.append(t)
+
+    segments = contiguous_segments(candidate_times, max_gap)
+    events = []
 
     for seg in segments:
         duration = seg[-1] - seg[0]
         if duration < min_duration:
             continue
 
-        # Check visibility drop after fall start
         vis_after = [v for (t, v) in visibility if t >= seg[0] and v is not None]
 
-        if vis_after and min(vis_after) < 0.4:
-            events.append(
-                {
-                    "type": "FALL",
-                    "start": seg[0],
-                    "end": seg[-1],
-                    "duration": duration,
-                    "confidence": float(min(vis_after)),
-                }
-            )
+        confidence = 1.0 - min(vis_after) if vis_after else 0.5
+
+        events.append(
+            {
+                "type": "FALL",
+                "start": seg[0],
+                "end": seg[-1],
+                "duration": duration,
+                "confidence": confidence,
+            }
+        )
 
     return events
 
@@ -106,46 +114,68 @@ def detect_fall(
 
 
 def detect_dyno(
-    cog_velocity: List[TimeValue],
-    cog_acceleration: List[TimeValue],
-    min_acceleration: float = 2.5,
-    min_velocity: float = 1.0,
+    velocity_norm: List[Tuple[float, Optional[float]]],
+    acceleration_norm: List[Tuple[float, Optional[float]]],
+    displacement_amplitude_norm: List[Tuple[float, Optional[float]]],
+    min_velocity: float = 0.25,
+    min_acceleration: float = 2.0,
+    min_amplitude: float = 0.08,
     max_duration: float = 0.6,
-) -> List[Event]:
-    """Detect dyno (dynamic jump) events.
-
-    Dyno definition:
-    - strong upward acceleration
-    - followed by upward velocity spike
-    - short duration
+    max_gap: float = 0.12,
+) -> List[Dict]:
+    """Detect DYNO (dynamic jump) events.
 
     Args:
-        cog_velocity: (time, vertical velocity)
-        cog_acceleration: (time, vertical acceleration)
-        min_acceleration: minimum acceleration threshold.
-        min_velocity: minimum velocity threshold.
-        max_duration: maximum duration.
+        velocity_norm: (time, normalized vertical velocity)
+        acceleration_norm: (time, normalized vertical acceleration)
+        displacement_amplitude_norm: (time, normalized displacement amplitude)
+        min_velocity: minimum upward velocity
+        min_acceleration: minimum upward acceleration
+        min_amplitude: minimum displacement amplitude
+        max_duration: maximum dyno duration
+        max_gap: maximum gap between samples
 
     Returns:
-        List of DYNO events.
+        List of DYNO event dictionaries.
     """
-    dyno_times = [t for (t, a) in cog_acceleration if a is not None and a > min_acceleration]
+    candidate_times = []
 
-    events: List[Event] = []
+    for (t, v), (_, a), (_, amp) in zip(
+        velocity_norm,
+        acceleration_norm,
+        displacement_amplitude_norm,
+    ):
+        if (
+            v is not None
+            and a is not None
+            and amp is not None
+            and v > min_velocity
+            and a > min_acceleration
+            and amp > min_amplitude
+        ):
+            candidate_times.append(t)
 
-    for t in dyno_times:
-        vel_after = [v for (t2, v) in cog_velocity if t <= t2 <= t + max_duration and v is not None]
+    segments = contiguous_segments(candidate_times, max_gap)
+    events = []
 
-        if vel_after and max(vel_after) > min_velocity:
-            events.append(
-                {
-                    "type": "DYNO",
-                    "start": t,
-                    "end": t + max_duration,
-                    "duration": max_duration,
-                    "confidence": max(vel_after),
-                }
-            )
+    for seg in segments:
+        duration = seg[-1] - seg[0]
+
+        if duration > max_duration:
+            continue
+
+        events.append(
+            {
+                "type": "DYNO",
+                "start": seg[0],
+                "end": seg[-1],
+                "duration": duration,
+                "confidence": min(
+                    1.0,
+                    max(seg) - min(seg) if len(seg) > 1 else 0.7,
+                ),
+            }
+        )
 
     return events
 
@@ -156,49 +186,55 @@ def detect_dyno(
 
 
 def detect_top(
-    hands_above_head: List[TimeValue],
-    motion_energy: List[TimeValue],
+    hands_above_shoulders: List[Tuple[float, Optional[bool]]],
+    cog_y_norm: List[Tuple[float, Optional[float]]],
+    motion_energy: List[Tuple[float, Optional[float]]],
+    top_threshold: float = 0.85,
+    max_motion: float = 0.08,
     min_duration: float = 1.0,
-    max_motion: float = 0.15,
-) -> List[Event]:
+    max_gap: float = 0.2,
+) -> List[Dict]:
     """Detect TOP (finish) events.
 
-    Top definition:
-    - hands above head
-    - low motion
-    - sustained
-
     Args:
-        hands_above_head: (time, bool)
+        hands_above_shoulders: (time, bool)
+        cog_y_norm: (time, normalized CoG Y)
         motion_energy: (time, motion magnitude)
-        min_duration: minimum duration threshold.
-        max_motion: maximum motion.
+        top_threshold: CoG near top threshold
+        max_motion: maximum allowed motion
+        min_duration: minimum TOP duration
+        max_gap: max gap between samples
 
     Returns:
-        List of TOP events.
+        List of TOP event dictionaries.
     """
-    valid_times = [t for (t, h) in hands_above_head if h]
+    candidate_times = []
 
-    segments = contiguous_segments(valid_times, max_gap=0.2)
-    events: List[Event] = []
+    for (t, h), (_, y), (_, m) in zip(
+        hands_above_shoulders,
+        cog_y_norm,
+        motion_energy,
+    ):
+        if h and y is not None and y > top_threshold and m is not None and m < max_motion:
+            candidate_times.append(t)
+
+    segments = contiguous_segments(candidate_times, max_gap)
+    events = []
 
     for seg in segments:
         duration = seg[-1] - seg[0]
         if duration < min_duration:
             continue
 
-        motion = [m for (t, m) in motion_energy if seg[0] <= t <= seg[-1] and m is not None]
-
-        if motion and max(motion) < max_motion:
-            events.append(
-                {
-                    "type": "TOP",
-                    "start": seg[0],
-                    "end": seg[-1],
-                    "duration": duration,
-                    "confidence": 1.0 - max(motion),
-                }
-            )
+        events.append(
+            {
+                "type": "TOP",
+                "start": seg[0],
+                "end": seg[-1],
+                "duration": duration,
+                "confidence": 1.0,
+            }
+        )
 
     return events
 
@@ -209,35 +245,35 @@ def detect_top(
 
 
 def detect_crux(
-    motion_variance: List[TimeValue],
-    vertical_progress: List[TimeValue],
-    min_duration: float = 3.0,
-    max_progress: float = 0.2,
-) -> List[Event]:
-    """Detect crux (hard section) events.
-
-    Crux definition:
-    - high motion variance
-    - low vertical progress
-    - long duration
+    motion_variance: List[Tuple[float, Optional[float]]],
+    vertical_progress: List[Tuple[float, Optional[float]]],
+    min_duration: float = 2.5,
+    max_progress: float = 0.15,
+    max_gap: float = 0.3,
+) -> List[Dict]:
+    """Detect CRUX (hard section) events.
 
     Args:
-        motion_variance: (time, variance)
+        motion_variance: (time, motion variance)
         vertical_progress: (time, vertical displacement)
-        min_duration: minimum event duration.
-        max_progress: maximum progress.
+        min_duration: minimum crux duration
+        max_progress: maximum allowed vertical progress
+        max_gap: max gap between samples
 
     Returns:
-        List of CRUX events.
+        List of CRUX event dictionaries.
     """
-    candidate_times = [
-        t
-        for (t, mv) in motion_variance
-        if mv is not None and mv > np.percentile([v for _, v in motion_variance if v is not None], 75)
-    ]
+    # Determine dynamic threshold (75th percentile)
+    values = [v for _, v in motion_variance if v is not None]
+    if not values:
+        return []
 
-    segments = contiguous_segments(candidate_times, max_gap=0.3)
-    events: List[Event] = []
+    variance_threshold = np.percentile(values, 75)
+
+    candidate_times = [t for (t, v) in motion_variance if v is not None and v > variance_threshold]
+
+    segments = contiguous_segments(candidate_times, max_gap)
+    events = []
 
     for seg in segments:
         duration = seg[-1] - seg[0]
@@ -246,14 +282,14 @@ def detect_crux(
 
         progress = [p for (t, p) in vertical_progress if seg[0] <= t <= seg[-1] and p is not None]
 
-        if progress and (max(progress) - min(progress)) < max_progress:
+        if progress and max(progress) < max_progress:
             events.append(
                 {
                     "type": "CRUX",
                     "start": seg[0],
                     "end": seg[-1],
                     "duration": duration,
-                    "confidence": np.mean(progress),
+                    "confidence": float(np.mean(progress)),
                 }
             )
 
