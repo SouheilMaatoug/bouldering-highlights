@@ -59,47 +59,42 @@ def segments_from_events(
     return segments
 
 
-def merge_segments(
-    segments: list[Segment],
-    gap: float = 0.2,
-) -> list[Segment]:
-    """Merge overlapping or close temporal segments."""
+def merge_segments(segments):
+    """Merge overlapping time segments."""
     if not segments:
         return []
 
-    segments = sorted(segments, key=lambda s: s.start)
+    segments = sorted(segments, key=lambda s: s["start"])
     merged = [segments[0]]
 
     for s in segments[1:]:
         last = merged[-1]
-
-        if s.start <= last.end + gap:
-            last.end = max(last.end, s.end)
-
-            # propagate strongest score if present
-            if s.score is not None:
-                if last.score is None:
-                    last.score = s.score
-                else:
-                    last.score = max(last.score, s.score)
-
-            # merge labels if needed
-            if s.label and s.label not in (last.label or ""):
-                last.label = f"{last.label}+{s.label}" if last.label else s.label
+        if s["start"] <= last["end"]:
+            last["end"] = max(last["end"], s["end"])
+            last["peak_score"] = max(last["peak_score"], s["peak_score"])
         else:
             merged.append(s)
 
     return merged
 
 
-def rank_segments(
-    segments: list[Segment],
-    duration_weight: float = 0.1,
-) -> list[Segment]:
-    """Rank segments by score and duration."""
+def rank_segments(segments, duration_weight=0.1):
+    """Rank highlight segments.
 
-    def rank_value(s: Segment) -> float:
-        base = s.score or 0.0
-        return base + duration_weight * s.duration
+    Returns:
+        Sorted list (best first)
+    """
+    ranked = []
 
-    return sorted(segments, key=rank_value, reverse=True)
+    for s in segments:
+        duration = s["end"] - s["start"]
+        score = s["peak_score"] + duration_weight * duration
+        ranked.append(
+            {
+                **s,
+                "duration": duration,
+                "rank_score": score,
+            }
+        )
+
+    return sorted(ranked, key=lambda x: x["rank_score"], reverse=True)
