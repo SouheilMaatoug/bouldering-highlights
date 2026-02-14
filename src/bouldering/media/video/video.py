@@ -1,8 +1,12 @@
 import math
+from typing import List
+
+import numpy as np
 
 from src.bouldering.media.audio.audio import Audio
 from src.bouldering.media.video.io import VideoReader, VideoWriter
 from src.bouldering.media.video.sequence import Sequence
+from src.bouldering.utils import ffmpeg, tmp
 
 
 class Video:
@@ -78,3 +82,81 @@ class Video:
         """
         vw = VideoWriter(output_path)
         vw.write(self.sequence, self.audio)
+
+    @classmethod
+    def concatenate(cls, videos: List["Video"]) -> "Video":
+        """Concatenate multiple Video objects into a single Video.
+
+        This method materializes intermediate files and performs
+        video concatenation using ffmpeg.
+
+        Args:
+            videos (List[Video]): Videos to concatenate.
+
+        Returns:
+            Video: Concatenated video.
+        """
+        if not videos:
+            raise ValueError("No videos to concatenate")
+
+        fps = videos[0].sequence.fps
+        resolution = videos[0].sequence.resolution
+        sample_rate = videos[0].audio.sample_rate
+
+        # ------------------------------------------
+        # 1. Validate consistency
+        # ------------------------------------------
+        for v in videos:
+            if v.sequence.fps != fps:
+                raise ValueError("All videos must have same FPS")
+            if v.sequence.resolution != resolution:
+                raise ValueError("All videos must have same resolution")
+            if v.audio.sample_rate != sample_rate:
+                raise ValueError("All audios must have same sample rate")
+
+        # ------------------------------------------
+        # 2. Write each video part to temp video
+        # ------------------------------------------
+        tmp_videos = []
+
+        for v in videos:
+            tmp_video = tmp.create_tmp_file(suffix=".mp4")
+            writer = VideoWriter(tmp_video)
+            writer.write(v.sequence, v.audio)
+            tmp_videos.append(tmp_video)
+
+        # ------------------------------------------
+        # 3. Concatenate video files (ffmpeg)
+        # ------------------------------------------
+        merged_video_path = tmp.create_tmp_file(suffix=".mp4")
+        ffmpeg.concat_videos(merged_video_path, tmp_videos)
+
+        # ------------------------------------------
+        # 4. Concatenate audio in memory
+        # ------------------------------------------
+        audio_samples = [v.audio.samples for v in videos]
+        merged_audio = Audio(
+            samples=np.concatenate(audio_samples, axis=0),
+            sample_rate=sample_rate,
+        )
+
+        # ------------------------------------------
+        # 5. Cleanup temp video parts
+        # ------------------------------------------
+        for p in tmp_videos:
+            tmp.clear_file(p)
+
+        # ------------------------------------------
+        # 6. Create final Sequence
+        # ------------------------------------------
+        total_frames = sum(v.sequence.n_frames for v in videos)
+
+        merged_sequence = Sequence(
+            video_path=merged_video_path,
+            fps=fps,
+            resolution=resolution,
+            start=0,
+            end=total_frames,
+        )
+
+        return cls(merged_sequence, merged_audio)

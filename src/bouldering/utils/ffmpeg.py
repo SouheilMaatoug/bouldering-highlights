@@ -1,4 +1,6 @@
 import subprocess
+import tempfile
+from pathlib import Path
 from typing import List, Optional
 
 
@@ -57,3 +59,35 @@ def merge_audio_video(output_path: str, video_path: str, audio_path: str) -> Non
         output_path,
     ]
     run(cmd)
+
+
+def concat_videos(output_path: str, video_paths: list[str]) -> None:
+    """Concatenate multiple videos using ffmpeg.
+
+    Args:
+        output_path (str): Output video path.
+        video_paths (list[str]): List of video files to concatenate.
+    """
+    # Create ffmpeg concat list file
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
+        for vp in video_paths:
+            f.write(f"file '{Path(vp).absolute()}'\n")
+        list_path = f.name
+
+    cmd = [
+        "ffmpeg",
+        "-y",
+        "-f",
+        "concat",
+        "-safe",
+        "0",
+        "-i",
+        list_path,
+        "-c",
+        "copy",
+        output_path,
+    ]
+
+    subprocess.run(cmd, check=True)
+
+    Path(list_path).unlink()
