@@ -136,11 +136,6 @@ def detect_peaks(
     return peaks
 
 
-# src/bouldering/scoring/segments.py
-
-from typing import List
-
-
 def extract_segments(
     peaks: List[dict],
     pre: float = 1.0,
