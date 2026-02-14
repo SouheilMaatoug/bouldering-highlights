@@ -1,3 +1,5 @@
+from typing import List
+
 import numpy as np
 
 
@@ -81,3 +83,90 @@ def sigmoid(x: float) -> float:
         float: Sigmoid of the input.
     """
     return 1.0 / (1.0 + np.exp(-x))
+
+
+def ema_smooth(signal, alpha=0.2):
+    """Exponential moving average smoothing.
+
+    Args:
+        signal: [(t, value)]
+        alpha: smoothing factor (0 < alpha <= 1)
+
+    Returns:
+        [(t, smoothed_value)]
+    """
+    smoothed = []
+    prev = 0.0
+
+    for t, v in signal:
+        prev = alpha * v + (1 - alpha) * prev
+        smoothed.append((t, prev))
+
+    return smoothed
+
+
+def detect_peaks(
+    signal: List[tuple[float, float]],
+    min_height: float = 0.45,
+    min_distance: float = 0.8,
+) -> List[dict]:
+    """Detect local maxima in a score curve.
+
+    Args:
+        signal: [(time, score)].
+        min_height: Minimum score threshold.
+        min_distance: Minimum temporal distance between peaks (seconds).
+
+    Returns:
+        List of detected peaks as dicts with keys:
+        {"time", "score"}.
+    """
+    peaks = []
+
+    for i in range(1, len(signal) - 1):
+        t, v = signal[i]
+
+        if v < min_height:
+            continue
+
+        if v > signal[i - 1][1] and v > signal[i + 1][1]:
+            if not peaks or (t - peaks[-1]["time"]) >= min_distance:
+                peaks.append({"time": t, "score": v})
+
+    return peaks
+
+
+# src/bouldering/scoring/segments.py
+
+from typing import List
+
+
+def extract_segments(
+    peaks: List[dict],
+    pre: float = 1.0,
+    post: float = 0.5,
+) -> List[dict]:
+    """Extract temporal highlight segments around peaks.
+
+    Args:
+        peaks: List of peak dicts {"time", "score"}.
+        pre: Seconds before peak.
+        post: Seconds after peak.
+
+    Returns:
+        List of segments as dicts:
+        {"start", "end", "peak_time", "peak_score"}.
+    """
+    segments = []
+
+    for p in peaks:
+        segments.append(
+            {
+                "start": max(0.0, p["time"] - pre),
+                "end": p["time"] + post,
+                "peak_time": p["time"],
+                "peak_score": p["score"],
+            }
+        )
+
+    return segments
