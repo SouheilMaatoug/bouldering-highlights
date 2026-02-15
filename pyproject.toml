@@ -59,6 +59,7 @@ repository = "https://github.com/SouheilMaatoug/bouldering-highlights"
 
 [project.scripts]
 bouldering-data = "src.bouldering.scripts.setup_data:main"
+highlight = "src.bouldering.scripts.highlight:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
