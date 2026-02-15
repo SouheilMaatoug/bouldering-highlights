@@ -9,6 +9,8 @@ repos:
       - id: sort-simple-yaml
       - id: check-added-large-files
         args: ['--maxkb=1024']
+        exclude: ^notebooks/pipeline\.ipynb$
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
     rev: v0.12.0

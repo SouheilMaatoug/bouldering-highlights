@@ -14,14 +14,27 @@ classifiers = [
   "Intended Audience :: Developers",
   "Topic :: Software Development :: Build Tools",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
 ]
 license = "MIT"
 license-files = ["LICENSE"]
-requires-python = ">=3.9"
-dependencies = []
+requires-python = ">=3.10"
+dependencies = [
+    "opencv-python==4.12.0.88",
+    "soundfile",
+    "yt-dlp",
+    "torch==2.10.0",
+    "torchvision==0.25.0",
+    "easyocr==1.7.2",
+    "tqdm==4.67.1",
+    "scenedetect==0.6.7.1",
+    "ultralytics==8.4.11",
+    "supervision==0.27.0",
+    "mediapipe>=0.10.13",
+    "tensorflow>=2.20",
+    "tensorflow-hub==0.16.1"
+    ]
 
 [project.optional-dependencies]
 dev = [
@@ -30,6 +43,7 @@ dev = [
     # lint
     "ruff>=0.14",
     "pre-commit>=4.3",
+    "black",
     # test
     "pytest>=8",
     "pytest-cov>=7",
@@ -42,6 +56,10 @@ dev = [
 ]
 [project.urls]
 repository = "https://github.com/SouheilMaatoug/bouldering-highlights"
+
+[project.scripts]
+bouldering-data = "src.bouldering.scripts.setup_data:main"
+highlight = "src.bouldering.scripts.highlight:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
@@ -56,7 +74,7 @@ readme = { file = ["README.md"] }
 line-length = 100
 
 [tool.ruff]
-line-length = 100
+line-length = 120
 indent-width = 4
 fix = true
 exclude = [
@@ -69,7 +87,7 @@ quote-style = "double"
 indent-style = "space"
 
 [tool.ruff.lint]
-select = ["I", "E", "F", "G"]  # isort, pyflakes, pycodestyle, pydocstyle
+select = ["I", "E", "F", "G", "D"]  # isort, pyflakes, pycodestyle, pydocstyle
 ignore = ["D100", "D104", "E402"]
 
 [tool.ruff.lint.isort]
